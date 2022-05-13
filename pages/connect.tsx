@@ -14,10 +14,9 @@ const Connect: NextPage = () => {
 			// Use video without audio
 			const constraints = {
 				video: true,
-				audio: false
+				audio: false,
+				environment: 'environment'
 			};
-
-			// Start video stream
 
 			if (videoRef.current) {
 				navigator.mediaDevices.getUserMedia(constraints).then(stream => (videoRef.current!.srcObject = stream));
@@ -53,7 +52,7 @@ const Connect: NextPage = () => {
 	return (
 		<div
 			style={{
-				width: '600px'
+				width: '20rem'
 			}}
 		>
 			<video ref={videoRef} width={640} autoPlay />
