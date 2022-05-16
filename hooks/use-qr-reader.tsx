@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-function useQrReader() {
+export function useQrReader() {
 	const [error, setError] = useState<string | null>(null);
 
 	const videoRef = useRef<HTMLVideoElement>(null);
@@ -10,7 +10,8 @@ function useQrReader() {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 			// Use video without audio
 			const constraints = {
-				video: { facingMode: { exact: 'environment' } },
+				// video: { facingMode: { exact: 'environment' } },
+				video: true,
 				audio: false
 			};
 			if (videoRef.current) {
@@ -36,10 +37,19 @@ function useQrReader() {
 	}
 
 	const videoElement = (
-		<div>
-			<video ref={videoRef} width={640} autoPlay />
+		<>
+			<video
+				style={{
+					width: '20rem',
+					border: '2px grey solid',
+					padding: '4px',
+					marginBottom: '2rem'
+				}}
+				ref={videoRef}
+				autoPlay
+			/>
 			{error && <p>{error}</p>}
-		</div>
+		</>
 	);
 
 	return {
@@ -47,5 +57,3 @@ function useQrReader() {
 		videoElement
 	};
 }
-
-export default useQrReader;

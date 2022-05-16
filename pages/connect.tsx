@@ -1,28 +1,47 @@
 import { useState } from 'react';
 import type { NextPage } from 'next';
-import { Button } from '@nextui-org/react';
-import useQrReader from '../components/qr-reader';
+import { useRouter } from 'next/router';
+import { Button, Container, Text } from '@nextui-org/react';
+import { useQrReader } from '../hooks/use-qr-reader';
 
 const Connect: NextPage = () => {
-	const [data, setData] = useState('No result');
-
 	const { videoElement, detectCode } = useQrReader();
+
+	const router = useRouter();
 
 	async function readQr() {
 		const qrData = await detectCode();
-		setData(qrData[0].rawValue);
+
+		await router.push(`client/${qrData[0].rawValue}`);
 	}
 
 	return (
-		<div
-			style={{
-				width: '20rem'
-			}}
-		>
-			{videoElement}
-			<Button onClick={readQr}>Detect</Button>
-			<p>{data}</p>
-		</div>
+		<Container sm css={{ h: '100vh' }} justify="center" display="flex">
+			<Container
+				fluid
+				css={{
+					p: 0,
+					my: 'auto'
+				}}
+				justify="center"
+				alignItems="center"
+				display="flex"
+			>
+				<Text
+					h2
+					css={{
+						textAlign: 'center',
+						mb: '1rem'
+					}}
+				>
+					Hi new team,<Text h4>please scan QR code, provided by Quiz master</Text>{' '}
+				</Text>
+				{videoElement}
+				<Button size="xl" onClick={readQr}>
+					Get into Quiz
+				</Button>
+			</Container>
+		</Container>
 	);
 };
 

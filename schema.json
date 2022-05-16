@@ -1,0 +1,25 @@
+{
+  "name": "Quiz 1",
+  "id": "UUID",
+  "token": "UNIQUE_TOKEN_TO_GET_INTO_QUIZ",
+  "tasks": {
+    "News": {
+      "1": {
+        "question": "Who said this",
+        "answer": "you"
+      }
+    }
+  },
+  "teams": {
+    "teamName": {
+      "tasks": {
+        "News": {
+          "1": {
+            "answer": "He",
+            "point": "1"
+          }
+        }
+      }
+    }
+  }
+}
