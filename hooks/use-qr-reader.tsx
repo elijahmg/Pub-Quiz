@@ -10,8 +10,7 @@ export function useQrReader() {
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 			// Use video without audio
 			const constraints = {
-				// video: { facingMode: { exact: 'environment' } },
-				video: true,
+				video: { facingMode: { exact: 'environment' } },
 				audio: false
 			};
 			if (videoRef.current) {
