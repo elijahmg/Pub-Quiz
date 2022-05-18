@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { NextPage } from 'next';
 import * as crypto from 'crypto';
-import { Container, Card, Row, Text, Button, Modal, Input } from '@nextui-org/react';
+import { Container, Row, Text, Button, Modal, Input } from '@nextui-org/react';
 import { doc, getFirestore, addDoc, collection } from '@firebase/firestore';
 import { useFireBaseApp } from '../store/firebase';
-import { setDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { QuizzesStatuses } from '../firestore-helpers/utils';
 
 const Home: NextPage = () => {
 	const [visible, setVisible] = useState(false);
@@ -28,11 +28,11 @@ const Home: NextPage = () => {
 		const collectionRef = collection(db, 'quizzes');
 
 		const output = await addDoc(collectionRef, {
-			name: 'Quiz 1',
+			name: quizName,
 			pin: hashPin(),
 			tasks: {},
 			teams: {},
-			status
+			status: QuizzesStatuses.INITIALIZED
 		});
 
 		setVisible(false);
