@@ -91,7 +91,6 @@ const Home: NextPage = () => {
 						w: 'fit-content',
 						h: 'fit-content',
 						p: '2rem',
-						// mt: '10rem',
 						'box-shadow': '$md',
 						'border-radius': '$md'
 					}}

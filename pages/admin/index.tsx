@@ -100,13 +100,15 @@ const Admin: NextPage = () => {
 									bgBlur: '#ffffff',
 									borderTop: '$borderWeights$light solid rgba(255, 255, 255, 0.2)',
 									bottom: 0,
-									zIndex: 1
+									zIndex: 1,
+									display: 'flex',
+									justifyContent: 'center'
 								}}
 							>
 								<Button.Group>
 									<Link href={`/admin/${topic.id}`}>
 										<Button auto size="xs">
-											Edit {topic.name}
+											Edit
 										</Button>
 									</Link>
 									<Button auto size="xs" onClick={() => setIsQrCodeVisible(topic)}>
@@ -114,7 +116,7 @@ const Admin: NextPage = () => {
 									</Button>
 									<Link href={`/admin/${topic.id}/start`}>
 										<Button auto size="xs">
-											Start quiz
+											Start
 										</Button>
 									</Link>
 								</Button.Group>
