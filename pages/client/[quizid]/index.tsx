@@ -16,8 +16,8 @@ const ClientQuizId: NextPage = () => {
 
 	const { quizid } = router.query;
 
-	const currentTopic = quiz?.currentPosition.topic || '';
-	const currentQuestion = quiz?.currentPosition.question || '';
+	const currentTopic = quiz?.currentPosition?.topic || '';
+	const currentQuestion = quiz?.currentPosition?.question || '';
 
 	useEffect(() => {
 		if (!quizid) return;
@@ -118,7 +118,7 @@ const ClientQuizId: NextPage = () => {
 					<>
 						<Text h2>{currentTopic}</Text>
 						<Card color="primary">
-							Q&nbsp;{currentQuestion}: {quiz?.tasks[currentTopic][currentQuestion].question}
+							Q&nbsp;{currentQuestion}: {quiz?.tasks[currentTopic]?.[currentQuestion].question}
 						</Card>
 						<Input
 							value={answer}
