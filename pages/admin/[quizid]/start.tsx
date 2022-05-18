@@ -5,32 +5,38 @@ import { Button, Card, Container, Grid, Row, Text } from '@nextui-org/react';
 import { app } from '../../../utils/firebase-init';
 import { useEffect, useState, Fragment } from 'react';
 
-export interface Quiz {
-	name: string;
-	currentPosition: {
-		question: string;
-		topic: string;
-	};
-	tasks: {
-		[topic: string]: {
-			[questionNumber: string]: {
-				question: string;
-				answer: string;
-			};
-		};
-	};
-	teams?: {
-		[teamName: string]: {
-			tasks: {
-				[topic: string]: {
-					[questionNumber: string]: {
-						answer: string;
-						point: number;
-					};
+interface Teams {
+	[teamName: string]: {
+		tasks: {
+			[topic: string]: {
+				[questionNumber: string]: {
+					answer: string;
+					point: number;
 				};
 			};
 		};
 	};
+}
+
+interface Tasks {
+	[topic: string]: {
+		[questionNumber: string]: {
+			question: string;
+			answer: string;
+		};
+	};
+}
+
+// @TODO think how to handle current position when app is started
+export interface Quiz {
+	name: string;
+	pin: string;
+	currentPosition?: {
+		question: string;
+		topic: string;
+	};
+	tasks: Partial<Tasks>;
+	teams: Partial<Teams>;
 }
 
 interface RunningQuizProps {
@@ -43,8 +49,8 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 
 	const { quizid } = router.query;
 
-	const currentTopic = quiz?.currentPosition.topic || '';
-	const currentQuestion = quiz?.currentPosition.question || '';
+	const currentTopic = quiz?.currentPosition?.topic || '';
+	const currentQuestion = quiz?.currentPosition?.question || '';
 
 	const topics = Object.keys(quiz?.tasks || {}).sort();
 	const indexOfCurrentTopic = topics.indexOf(currentTopic);
@@ -67,14 +73,14 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 		if (!quizid) return;
 
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 
 		onSnapshot(docRef, doc => setQuiz(doc.data() as Quiz));
 	}, [quizid]);
 
 	async function setTopic(possibleNextTopic: string) {
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 		const data = await getDoc(docRef);
 
 		if (!data.exists()) return;
@@ -89,7 +95,7 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 
 	async function setQuestion(possibleNextQuestion: string) {
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 		const data = await getDoc(docRef);
 
 		if (!data.exists()) return;
@@ -100,20 +106,19 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 		await updateDoc(docRef, quizData);
 	}
 
+	// @TODO handle no quiz
 	if (!quiz) return null;
 
-	console.log(quiz);
-
 	return (
-		<Container>
+		<Container sm>
 			<Row>
 				{topics?.map(topic => (
-					<Button size="sm" light color={topic === quiz.currentPosition.topic ? 'success' : 'primary'} key={topic}>
+					<Button size="sm" light color={topic === quiz.currentPosition?.topic ? 'success' : 'primary'} key={topic}>
 						{topic}
 					</Button>
 				))}
 			</Row>
-			<Card>Q: {quiz.tasks[quiz.currentPosition.topic][quiz.currentPosition.question].question}</Card>
+			<Card>Q: {quiz.tasks?.[quiz.currentPosition?.topic || '']?.[quiz.currentPosition?.question || ''].question}</Card>
 			<Row
 				css={{
 					mt: '1rem'
@@ -142,12 +147,12 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 						<Card>
 							<Card.Header>{team}</Card.Header>
 							<Card.Body>
-								{Object.keys(quiz?.teams?.[team].tasks || {})
+								{Object.keys(quiz?.teams?.[team]?.tasks || {})
 									.reverse()
 									.map(topic => (
 										<Fragment key={topic}>
 											<Text>{topic}</Text>
-											{Object.keys(quiz?.teams?.[team].tasks[topic] || {})
+											{Object.keys(quiz?.teams?.[team]?.tasks[topic] || {})
 												.reverse()
 												.map(q => (
 													<Text
@@ -156,7 +161,7 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 														}}
 														key={q}
 													>
-														{q}: {quiz?.teams?.[team].tasks[topic][q].answer}
+														{q}: {quiz?.teams?.[team]?.tasks[topic][q].answer}
 													</Text>
 												))}
 										</Fragment>

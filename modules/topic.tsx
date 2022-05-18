@@ -1,8 +1,8 @@
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Button, Container, FormElement, Input, Card } from '@nextui-org/react';
-import { getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { doc, getFirestore } from '@firebase/firestore';
-import { app } from '../utils/firebase-init';
+import { Button, Container, FormElement, Input } from '@nextui-org/react';
+import { deleteField } from 'firebase/firestore';
+import { getQuiz } from '../firestore-helpers/get-data';
+import { updateData } from '../firestore-helpers/update-data';
 
 interface QuestionsValue {
 	[questionKey: string]: {
@@ -26,16 +26,14 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 	}, [topicState]);
 
 	useEffect(() => {
-		setTopicState(activeTopic);
+		setTopicState(activeTopic || '');
 	}, [activeTopic]);
 
 	async function getData() {
-		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizId);
-		const docSnap = await getDoc(docRef);
+		const data = await getQuiz(quizId);
 
-		if (docSnap.exists()) {
-			const questions = docSnap.data()['tasks'][topicState];
+		if (data.exists()) {
+			const questions = data.data()['tasks'][topicState];
 			setQuestionsValues(questions);
 		}
 	}
@@ -51,34 +49,19 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 	}
 
 	async function onSaveTopicData() {
-		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizId);
+		const notion = `tasks.${topicState}`;
 
-		// Update to stay consistent
-		const data = await getDoc(docRef);
-
-		if (!data.exists()) return;
-
-		const quizData = data.data();
-
-		quizData.tasks = {
-			...quizData.tasks,
-			[topicState]: questionsValue
-		};
-
-		await updateDoc(docRef, quizData);
+		await updateData(quizId, {
+			[notion]: questionsValue
+		});
 	}
 
 	async function deleteTopic() {
-		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizId);
-		const data = await getDoc(docRef);
+		const notion = `tasks.${topicState}`;
 
-		if (!data.exists()) return;
-		const quizData = data.data();
-		delete quizData.tasks[topicState];
-
-		await updateDoc(docRef, quizData);
+		await updateData(quizId, {
+			[notion]: deleteField()
+		});
 	}
 
 	return (
@@ -95,6 +78,7 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 						<Input
 							id={q}
 							fullWidth
+							bordered
 							label={`Question ${q}`}
 							onChange={e => onChange(e, q)}
 							name="question"
@@ -103,6 +87,7 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 						<Input
 							id={q + 'answer'}
 							fullWidth
+							bordered
 							label="Answer"
 							name="answer"
 							value={questionsValue?.[q]?.answer || ''}

@@ -18,7 +18,7 @@ const Admin: NextPage = () => {
 		if (!quizid) return;
 
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 
 		onSnapshot(docRef, doc => {
 			const topics = Object.keys(doc.data()!.tasks);
@@ -51,7 +51,7 @@ const Admin: NextPage = () => {
 					mt: '4rem'
 				}}
 			>
-				Create Quiz
+				Start quiz
 			</Button>
 		</Container>
 	);

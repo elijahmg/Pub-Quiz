@@ -1,65 +1,138 @@
+import { useState } from 'react';
 import type { NextPage } from 'next';
-import { Container, Card, Row, Text, Button } from '@nextui-org/react';
-import { arrayUnion, doc, getFirestore } from '@firebase/firestore';
+import * as crypto from 'crypto';
+import { Container, Card, Row, Text, Button, Modal, Input } from '@nextui-org/react';
+import { doc, getFirestore, addDoc, collection } from '@firebase/firestore';
 import { useFireBaseApp } from '../store/firebase';
-import { setDoc, getDoc } from 'firebase/firestore';
+import { setDoc } from 'firebase/firestore';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const Home: NextPage = () => {
+	const [visible, setVisible] = useState(false);
+	const [quizName, setQuizName] = useState('');
+	const [pin, setPin] = useState('');
+
+	const router = useRouter();
+
 	const app = useFireBaseApp();
 	const db = getFirestore(app);
 
-	async function addData() {
-		await setDoc(doc(db, 'quizes', 'X0SvdzLzrJjxbUBba9ff'), {
-			name: 'Quiz 1',
-			id: 'UUID',
-			token: 'UNIQUE_TOKEN_TO_GET_INTO_QUIZ',
-			tasks: {
-				News: {
-					'1': {
-						question: 'Who said this',
-						answer: 'you'
-					}
-				}
-			},
-			teams: [
-				{
-					id: 'UUID',
-					name: 'Team 1',
-					tasks: {
-						News: {
-							'1': {
-								answer: 'He',
-								point: '1'
-							}
-						}
-					}
-				}
-			]
-		});
+	function hashPin() {
+		const salt = crypto.randomBytes(16).toString('hex');
+
+		return crypto.pbkdf2Sync(pin, salt, 1000, 10, `sha512`).toString(`hex`);
 	}
 
-	async function getData() {
-		const docRef = doc(db, 'cities', 'LA');
-		const docSnap = await getDoc(docRef);
+	async function createQuiz() {
+		const collectionRef = collection(db, 'quizzes');
 
-		const newVal = arrayUnion({ someKey: 'new' });
+		const output = await addDoc(collectionRef, {
+			name: 'Quiz 1',
+			pin: hashPin(),
+			tasks: {},
+			teams: {},
+			status
+		});
 
-		await setDoc(docRef, { nest: newVal }, { merge: true });
+		setVisible(false);
+
+		await router.push(`/admin/${output.id}`);
 	}
 
 	return (
-		<Container xs>
-			<Card color="primary">
-				<Row justify="center" align="center">
-					<Text h6 size={15} color="white" css={{ m: 0 }}>
-						NextUI gives you the best developer experience with all the features you need for building beautiful and
-						modern websites and applications.
+		<>
+			<Modal closeButton aria-labelledby="modal-title" open={visible} onClose={() => setVisible(false)}>
+				<Modal.Header>
+					<Text id="modal-title" size={18}>
+						Name your quiz and create PIN to access it later
 					</Text>
-				</Row>
-			</Card>
-			<Button onClick={addData}>Add data</Button>
-			<Button onClick={getData}>Get data</Button>
-		</Container>
+				</Modal.Header>
+				<Modal.Body>
+					<Input
+						clearable
+						bordered
+						fullWidth
+						color="primary"
+						size="lg"
+						placeholder="Quiz name"
+						value={quizName}
+						onChange={e => setQuizName(e.target.value)}
+					/>
+					<Input
+						clearable
+						bordered
+						fullWidth
+						color="primary"
+						size="lg"
+						placeholder="Pin"
+						value={pin}
+						type="number"
+						onChange={e => setPin(e.target.value)}
+					/>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button auto onClick={createQuiz}>
+						Create
+					</Button>
+				</Modal.Footer>
+			</Modal>
+			<Container
+				sm
+				display="flex"
+				justify="center"
+				alignItems="center"
+				css={{
+					h: '100vh'
+				}}
+			>
+				<Container
+					css={{
+						w: 'fit-content',
+						h: 'fit-content',
+						p: '2rem',
+						// mt: '10rem',
+						'box-shadow': '$md',
+						'border-radius': '$md'
+					}}
+				>
+					<Text h1 css={{ m: 0 }}>
+						Pub quiz
+					</Text>
+					<Text h3 css={{ m: 0, 'max-width': '30rem' }}>
+						This is simple application allows you to create, host or connect to pub quizzes
+					</Text>
+					<Row
+						css={{
+							mt: '4rem',
+							'align-items': 'center',
+							'justify-content': 'center'
+						}}
+					>
+						<Button
+							auto
+							css={{
+								mr: '.5rem'
+							}}
+							onClick={() => setVisible(true)}
+						>
+							Create quiz
+						</Button>
+						<Link href="/connect">
+							<Button
+								bordered
+								auto
+								css={{
+									ml: '.5rem'
+								}}
+							>
+								Connect
+							</Button>
+						</Link>
+					</Row>
+				</Container>
+			</Container>
+		</>
 	);
 };
 

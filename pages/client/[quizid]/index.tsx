@@ -23,7 +23,7 @@ const ClientQuizId: NextPage = () => {
 		if (!quizid) return;
 
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 
 		onSnapshot(docRef, doc => {
 			setQuiz(doc.data() as Quiz);
@@ -44,7 +44,7 @@ const ClientQuizId: NextPage = () => {
 		localStorage.setItem('teamName', teamNameInput);
 
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 		const data = await getDoc(docRef);
 
 		if (!data.exists()) return;
@@ -60,7 +60,7 @@ const ClientQuizId: NextPage = () => {
 		if (!answer) return;
 
 		const db = getFirestore(app);
-		const docRef = doc(db, 'quizes', quizid as string);
+		const docRef = doc(db, 'quizzes', quizid as string);
 		const data = await getDoc(docRef);
 
 		if (!data.exists()) return;

@@ -16,12 +16,14 @@ const Connect: NextPage = () => {
 	}
 
 	return (
-		<Container sm css={{ h: '100vh' }} justify="center" display="flex">
+		<Container sm justify="center" display="flex">
 			<Container
 				fluid
 				css={{
 					p: 0,
-					my: 'auto'
+					my: 'auto',
+					mt: '2rem',
+					'flex-direction': 'column'
 				}}
 				justify="center"
 				alignItems="center"
@@ -30,12 +32,19 @@ const Connect: NextPage = () => {
 				<Text
 					h2
 					css={{
-						textAlign: 'center',
+						textAlign: 'center'
+					}}
+				>
+					Hi new team,
+				</Text>
+				<Text
+					h4
+					css={{
 						mb: '1rem'
 					}}
 				>
-					Hi new team,<Text h4>please scan QR code, provided by Quiz master</Text>{' '}
-				</Text>
+					please scan QR code, provided by Quiz master
+				</Text>{' '}
 				{videoElement}
 				<Button size="xl" onClick={readQr}>
 					Get into Quiz

@@ -6,13 +6,16 @@ export function useQrReader() {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const detectorRef = useRef(null);
 
+	const constraints = {
+		// video: { facingMode: { exact: 'environment' } },
+		video: true,
+		audio: false
+	};
+
 	useEffect(() => {
-		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-			// Use video without audio
-			const constraints = {
-				video: { facingMode: { exact: 'environment' } },
-				audio: false
-			};
+		const copyRef = videoRef.current;
+
+		if (navigator.mediaDevices?.getUserMedia) {
 			if (videoRef.current) {
 				navigator.mediaDevices.getUserMedia(constraints).then(stream => (videoRef.current!.srcObject = stream));
 			}
@@ -24,6 +27,14 @@ export function useQrReader() {
 			// @ts-ignore
 			detectorRef.current = new BarcodeDetector({ formats: ['qr_code'] });
 		}
+
+		return () => {
+			if (copyRef?.srcObject) {
+				const tracks = (copyRef.srcObject as MediaStream).getTracks();
+				tracks.forEach(t => t.stop());
+				copyRef.srcObject = null;
+			}
+		};
 	}, []);
 
 	async function detectCode() {
@@ -40,6 +51,7 @@ export function useQrReader() {
 			<video
 				style={{
 					width: '20rem',
+					height: '20rem',
 					border: '2px grey solid',
 					padding: '4px',
 					marginBottom: '2rem'
