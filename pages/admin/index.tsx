@@ -102,7 +102,7 @@ const Admin: NextPage = () => {
 									bottom: 0,
 									zIndex: 1,
 									display: 'flex',
-									justifyContent: 'center'
+									justifyContent: 'space-between'
 								}}
 							>
 								<Button.Group>
@@ -111,15 +111,15 @@ const Admin: NextPage = () => {
 											Edit
 										</Button>
 									</Link>
-									<Button auto size="xs" onClick={() => setIsQrCodeVisible(topic)}>
-										Show QR code
-									</Button>
 									<Link href={`/admin/${topic.id}/start`}>
 										<Button auto size="xs">
 											Start
 										</Button>
 									</Link>
 								</Button.Group>
+								<Button color="warning" auto onClick={() => setIsQrCodeVisible(topic)}>
+									Show QR code
+								</Button>
 							</Card.Footer>
 						</Card>
 					))}
