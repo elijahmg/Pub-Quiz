@@ -2,7 +2,7 @@ import { Button, Input, Modal, Text } from '@nextui-org/react';
 import { useState } from 'react';
 import { hash } from '../utils/hash';
 import { getQuiz } from '../firestore-helpers/get-data';
-import { Quiz } from '../pages/admin/[quizid]/start';
+import { Quiz } from '../pages/admin/[quizid]/running';
 import { useRouter } from 'next/router';
 
 interface Props {

@@ -1,7 +1,7 @@
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { Quiz } from '../../admin/[quizid]/start';
+import { Quiz } from '../../admin/[quizid]/running';
 import { Card, Input, Button, Text, Container } from '@nextui-org/react';
 import { doc, getFirestore, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
 import { app } from '../../../utils/firebase-init';

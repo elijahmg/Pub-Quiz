@@ -106,7 +106,7 @@ function Admin<NextPageWithLayout>() {
 										auto
 										onClick={() => {
 											setIsVerificationModalVisible(quiz.id);
-											setHrefAfterVerification(`${quiz.id}/start`);
+											setHrefAfterVerification(`${quiz.id}/running`);
 										}}
 									>
 										Start
