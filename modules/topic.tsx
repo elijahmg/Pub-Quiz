@@ -3,6 +3,7 @@ import { Button, Container, FormElement, Input } from '@nextui-org/react';
 import { deleteField } from 'firebase/firestore';
 import { getQuiz } from '../firestore-helpers/get-data';
 import { updateData } from '../firestore-helpers/update-data';
+import { useMediaQuery } from '../hooks/use-media-query';
 
 interface QuestionsValue {
 	[questionKey: string]: {
@@ -20,6 +21,8 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 	const [topicState, setTopicState] = useState(activeTopic);
 	const [questionsValue, setQuestionsValues] = useState<QuestionsValue>({});
 	const questions = ['1', '2', '3', '4', '5'];
+
+	const isMd = useMediaQuery(960);
 
 	useEffect(() => {
 		getData();
@@ -98,7 +101,8 @@ export function Topic({ quizId, activeTopic }: TopicProps) {
 				<Container display="flex">
 					<Button
 						css={{
-							mr: '2rem'
+							mr: '2rem',
+							mb: isMd ? '0.3rem' : 0
 						}}
 						bordered
 						onClick={onSaveTopicData}

@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { Button, Card, Container, Grid, Row, Text } from '@nextui-org/react';
 import { app } from '../../../utils/firebase-init';
 import { useEffect, useState, Fragment } from 'react';
+import { QuizzesStatuses } from '../../../firestore-helpers/utils';
+import { PartialQuizData, QrCodeModal } from '../../../modules/qr-code-modal';
 
 interface Teams {
 	[teamName: string]: {
@@ -37,6 +39,7 @@ export interface Quiz {
 	};
 	tasks: Partial<Tasks>;
 	teams: Partial<Teams>;
+	status: QuizzesStatuses;
 }
 
 interface RunningQuizProps {
@@ -45,10 +48,12 @@ interface RunningQuizProps {
 
 const RunningQuiz: NextPage<RunningQuizProps> = () => {
 	const [quiz, setQuiz] = useState<Quiz>();
+	const [qrCodeData, setQrCodeData] = useState<PartialQuizData | undefined>(undefined);
 	const router = useRouter();
 
 	const { quizid } = router.query;
 
+	// @TODO refactor this
 	const currentTopic = quiz?.currentPosition?.topic || '';
 	const currentQuestion = quiz?.currentPosition?.question || '';
 
@@ -110,68 +115,91 @@ const RunningQuiz: NextPage<RunningQuizProps> = () => {
 	if (!quiz) return null;
 
 	return (
-		<Container sm>
-			<Row>
-				{topics?.map(topic => (
-					<Button size="sm" light color={topic === quiz.currentPosition?.topic ? 'success' : 'primary'} key={topic}>
-						{topic}
-					</Button>
-				))}
-			</Row>
-			<Card>Q: {quiz.tasks?.[quiz.currentPosition?.topic || '']?.[quiz.currentPosition?.question || ''].question}</Card>
-			<Row
+		<>
+			<QrCodeModal qrCodeData={qrCodeData} setQrCodeData={setQrCodeData} />
+			<Container
 				css={{
-					mt: '1rem'
+					my: 'auto'
 				}}
+				sm
 			>
-				<Button.Group>
-					<Button disabled={!possiblePrevQuestion} onClick={() => setQuestion(possiblePrevQuestion)}>
-						Previous question
-					</Button>
-					<Button disabled={!possibleNextQuestion} onClick={() => setQuestion(possibleNextQuestion)}>
-						Next question
-					</Button>
-				</Button.Group>
-				<Button.Group>
-					<Button onClick={() => setTopic(possiblePrevTopic)} bordered disabled={!possiblePrevTopic}>
-						Previous topic
-					</Button>
-					<Button onClick={() => setTopic(possibleNextTopic)} bordered disabled={!possibleNextTopic}>
-						Next topic
-					</Button>
-				</Button.Group>
-			</Row>
-			<Grid.Container gap={2} justify="center">
-				{Object.keys(quiz.teams || {}).map(team => (
-					<Grid key={team}>
-						<Card>
-							<Card.Header>{team}</Card.Header>
-							<Card.Body>
-								{Object.keys(quiz?.teams?.[team]?.tasks || {})
-									.reverse()
-									.map(topic => (
-										<Fragment key={topic}>
-											<Text>{topic}</Text>
-											{Object.keys(quiz?.teams?.[team]?.tasks[topic] || {})
-												.reverse()
-												.map(q => (
-													<Text
-														css={{
-															ml: '1rem'
-														}}
-														key={q}
-													>
-														{q}: {quiz?.teams?.[team]?.tasks[topic][q].answer}
-													</Text>
-												))}
-										</Fragment>
-									))}
-							</Card.Body>
-						</Card>
-					</Grid>
-				))}
-			</Grid.Container>
-		</Container>
+				<Row>
+					{topics?.map(topic => (
+						<Button size="sm" light color={topic === quiz.currentPosition?.topic ? 'success' : 'primary'} key={topic}>
+							{topic}
+						</Button>
+					))}
+				</Row>
+				<Card>
+					Q: {quiz.tasks?.[quiz.currentPosition?.topic || '']?.[quiz.currentPosition?.question || ''].question}
+				</Card>
+				<Row
+					css={{
+						mt: '1rem'
+					}}
+				>
+					<Button.Group>
+						<Button disabled={!possiblePrevQuestion} onClick={() => setQuestion(possiblePrevQuestion)}>
+							Previous question
+						</Button>
+						<Button disabled={!possibleNextQuestion} onClick={() => setQuestion(possibleNextQuestion)}>
+							Next question
+						</Button>
+					</Button.Group>
+					<Button.Group>
+						<Button onClick={() => setTopic(possiblePrevTopic)} bordered disabled={!possiblePrevTopic}>
+							Previous topic
+						</Button>
+						<Button onClick={() => setTopic(possibleNextTopic)} bordered disabled={!possibleNextTopic}>
+							Next topic
+						</Button>
+					</Button.Group>
+					<Button.Group color="warning">
+						<Button
+							onClick={() =>
+								setQrCodeData({
+									name: quiz?.name,
+									id: quizid as string
+								})
+							}
+							bordered
+						>
+							Show QR code
+						</Button>
+					</Button.Group>
+				</Row>
+				<Grid.Container gap={2} justify="center">
+					{Object.keys(quiz.teams || {}).map(team => (
+						<Grid key={team}>
+							<Card>
+								<Card.Header>{team}</Card.Header>
+								<Card.Body>
+									{Object.keys(quiz?.teams?.[team]?.tasks || {})
+										.reverse()
+										.map(topic => (
+											<Fragment key={topic}>
+												<Text>{topic}</Text>
+												{Object.keys(quiz?.teams?.[team]?.tasks[topic] || {})
+													.reverse()
+													.map(q => (
+														<Text
+															css={{
+																ml: '1rem'
+															}}
+															key={q}
+														>
+															{q}: {quiz?.teams?.[team]?.tasks[topic][q].answer}
+														</Text>
+													))}
+											</Fragment>
+										))}
+								</Card.Body>
+							</Card>
+						</Grid>
+					))}
+				</Grid.Container>
+			</Container>
+		</>
 	);
 };
 

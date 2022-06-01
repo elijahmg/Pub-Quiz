@@ -1,13 +1,14 @@
-import { NextPage, GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { Button, Container, Text } from '@nextui-org/react';
 import { Topic } from '../../../modules/topic';
 import { doc, getFirestore } from '@firebase/firestore';
 import { app } from '../../../utils/firebase-init';
-import { collection, getDoc, onSnapshot } from 'firebase/firestore';
+import { onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { NextPageWithLayout } from '../../_app';
+import { BackButton } from '../../../modules/back-button';
 
-const Admin: NextPage = () => {
+function AdminQuizPage<NextPageWithLayout>() {
 	const [topics, setTopics] = useState<string[]>([]);
 	const [activeTopic, setActiveTopic] = useState<string>(topics[0] || '');
 	const router = useRouter();
@@ -55,6 +56,13 @@ const Admin: NextPage = () => {
 			</Button>
 		</Container>
 	);
-};
+}
 
-export default Admin;
+AdminQuizPage.getLayout = (page: NextPageWithLayout) => (
+	<>
+		<BackButton href="/admin" title="Back to Admin page" />
+		{page}
+	</>
+);
+
+export default AdminQuizPage;

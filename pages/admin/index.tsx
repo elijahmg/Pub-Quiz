@@ -1,31 +1,33 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { NextPage } from 'next';
-import { Button, Card, Container, Text, Col, Modal } from '@nextui-org/react';
+import { Button, Card, Container, Text, Col } from '@nextui-org/react';
 import { getFirestore } from '@firebase/firestore';
 import { app } from '../../utils/firebase-init';
 import { collection, getDocs } from 'firebase/firestore';
-import QRCode from 'react-qr-code';
+import type { PartialQuizData } from '../../modules/qr-code-modal';
+import { QrCodeModal } from '../../modules/qr-code-modal';
+import { useMediaQuery } from '../../hooks/use-media-query';
+import { NextPageWithLayout } from '../_app';
+import { BackButton } from '../../modules/back-button';
+import { VerificationModal } from '../../modules/verification-modal';
 
-interface Quizes {
-	id: string;
-	name: string;
-}
-
-const Admin: NextPage = () => {
-	const [quizes, setQuizes] = useState<Quizes[]>([]);
-	const [isQrCodeVisible, setIsQrCodeVisible] = useState<Quizes | undefined>(undefined);
+function Admin<NextPageWithLayout>() {
+	const [quizzes, setQuizzes] = useState<PartialQuizData[]>([]);
+	const [qrCodeData, setQrCodeData] = useState<PartialQuizData | undefined>(undefined);
+	const [isVerificationModalVisible, setIsVerificationModalVisible] = useState<string>('');
+	const [hrefAfterVerification, setHrefAfterVerification] = useState('');
+	const isMd = useMediaQuery(960);
 
 	async function getData() {
 		const db = getFirestore(app);
 		const docRef = collection(db, 'quizzes');
 		const docs = await getDocs(docRef);
-		const docsId: Quizes[] = [];
+		const docsId: PartialQuizData[] = [];
 
 		// @TODO make state of quiz
 		docs.forEach(d => docsId.push({ id: d.id, name: d.data().name }));
 
-		setQuizes(docsId);
+		setQuizzes(docsId);
 	}
 
 	useEffect(() => {
@@ -34,30 +36,15 @@ const Admin: NextPage = () => {
 
 	return (
 		<>
-			<Modal
-				closeButton
-				blur
-				aria-labelledby="modal-title"
-				open={!!isQrCodeVisible}
-				onClose={() => setIsQrCodeVisible(undefined)}
-			>
-				<Modal.Header>
-					<Text id="modal-title" size={18}>
-						QR code for &nbsp;
-						<Text b size={18}>
-							{isQrCodeVisible?.name}
-						</Text>
-					</Text>
-				</Modal.Header>
-				<Modal.Body
-					autoMargin
-					css={{
-						alignItems: 'center'
-					}}
-				>
-					<QRCode value={isQrCodeVisible?.id || ''} />
-				</Modal.Body>
-			</Modal>
+			<VerificationModal
+				quizId={isVerificationModalVisible}
+				href={hrefAfterVerification}
+				onToggleVisibility={newValue => {
+					setIsVerificationModalVisible(newValue);
+					setHrefAfterVerification('');
+				}}
+			/>
+			<QrCodeModal qrCodeData={qrCodeData} setQrCodeData={setQrCodeData} />
 			<Container
 				sm
 				css={{
@@ -67,21 +54,21 @@ const Admin: NextPage = () => {
 				<Container
 					display="grid"
 					css={{
-						gridTemplateColumns: 'repeat(2, 1fr)',
+						gridTemplateColumns: isMd ? '1fr' : 'repeat(2, 1fr)',
 						gridRowGap: '.5em',
 						gridColumnGap: '1em',
 						alignItems: 'center'
 					}}
 				>
-					{quizes.map(topic => (
-						<Card cover css={{ mw: 400, mh: 300, justifySelf: 'center' }} key={topic.id}>
+					{quizzes.map(quiz => (
+						<Card cover css={{ mw: 400, mh: 300, justifySelf: 'center' }} key={quiz.id}>
 							<Card.Header css={{ position: 'absolute', zIndex: 1, top: 5 }}>
 								<Col>
 									<Text size={12} weight="bold" transform="uppercase" color="#ffffffAA">
 										Quiz
 									</Text>
 									<Text h3 color="white">
-										{topic.name}
+										{quiz.name}
 									</Text>
 								</Col>
 							</Card.Header>
@@ -105,19 +92,27 @@ const Admin: NextPage = () => {
 									justifyContent: 'space-between'
 								}}
 							>
-								<Button.Group>
-									<Link href={`/admin/${topic.id}`}>
-										<Button auto size="xs">
-											Edit
-										</Button>
-									</Link>
-									<Link href={`/admin/${topic.id}/start`}>
-										<Button auto size="xs">
-											Start
-										</Button>
-									</Link>
+								<Button.Group size="sm">
+									<Button
+										auto
+										onClick={() => {
+											setIsVerificationModalVisible(quiz.id);
+											setHrefAfterVerification(`${quiz.id}`);
+										}}
+									>
+										Edit
+									</Button>
+									<Button
+										auto
+										onClick={() => {
+											setIsVerificationModalVisible(quiz.id);
+											setHrefAfterVerification(`${quiz.id}/start`);
+										}}
+									>
+										Start
+									</Button>
 								</Button.Group>
-								<Button color="warning" auto onClick={() => setIsQrCodeVisible(topic)}>
+								<Button size="sm" color="warning" auto onClick={() => setQrCodeData(quiz)}>
 									Show QR code
 								</Button>
 							</Card.Footer>
@@ -127,6 +122,13 @@ const Admin: NextPage = () => {
 			</Container>
 		</>
 	);
-};
+}
+
+Admin.getLayout = (page: NextPageWithLayout) => (
+	<>
+		<BackButton />
+		{page}
+	</>
+);
 
 export default Admin;
