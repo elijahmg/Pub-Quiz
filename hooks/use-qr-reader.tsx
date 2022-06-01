@@ -7,8 +7,7 @@ export function useQrReader() {
 	const detectorRef = useRef(null);
 
 	const constraints = {
-		// video: { facingMode: { exact: 'environment' } },
-		video: true,
+		video: { facingMode: { exact: 'environment' } },
 		audio: false
 	};
 
